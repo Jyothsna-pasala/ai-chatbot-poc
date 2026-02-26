@@ -1,0 +1,16 @@
+[
+    {
+      "id": "kb_vm_crash",
+      "question": "vm crashed",
+      "answer": "Restart the VM from lab dashboard. If issue persists, contact support.",
+      "tier": "TIER_2",
+      "severity": "HIGH"
+    },
+    {
+      "id": "kb_login_issue",
+      "question": "login issue",
+      "answer": "Clear browser cache and try again.",
+      "tier": "TIER_1",
+      "severity": "LOW"
+    }
+   ]
