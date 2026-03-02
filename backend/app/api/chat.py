@@ -38,22 +38,53 @@ conversation_store = {}
 #         confidence=0.70
 #     )
 
+
+#//2
+# from fastapi import APIRouter
+# from app.models.schemas import ChatRequest, ChatResponse
+# from app.services.chat_service import handle_chat
+
+# router = APIRouter()
+
+# @router.post("/api/chat", response_model=ChatResponse)
+# async def chat_endpoint(req: ChatRequest):
+
+#     answer = handle_chat(
+#         session_id=req.sessionId,
+#         user_message=req.message
+#     )
+
+#     return ChatResponse(
+#         answer=answer,
+#         confidence=0.75
+#     )
+
+#3
 from fastapi import APIRouter
+
 from app.models.schemas import ChatRequest, ChatResponse
 from app.services.chat_service import handle_chat
 
+
 router = APIRouter()
 
-@router.post("/api/chat", response_model=ChatResponse)
+
+@router.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(req: ChatRequest):
 
-    answer = handle_chat(
+    # Call service
+    result = handle_chat(
         session_id=req.sessionId,
         user_message=req.message
     )
 
+    # Return proper structured response
     return ChatResponse(
-        answer=answer,
-        confidence=0.75
+        answer=result["answer"],
+        confidence=result["confidence"],
+        tier=result["tier"],
+        severity=result["severity"],
+        kbReferences=result["kbReferences"],
+        needsEscalation=result["needsEscalation"],
+        guardrail=result["guardrail"]
     )
-
