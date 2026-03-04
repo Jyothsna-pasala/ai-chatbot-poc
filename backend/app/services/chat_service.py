@@ -114,35 +114,137 @@
 
 #//learn 4
 
-from app.services.vector_service import VectorService
-from app.services.guardrail_service import GuardrailService
+# from app.services.vector_service import VectorService
+# from app.services.guardrail_service import GuardrailService
 
 
-vector_service = VectorService()
-guardrail_service = GuardrailService()
+# vector_service = VectorService()
+# guardrail_service = GuardrailService()
+
+
+# def handle_chat(session_id: str, user_message: str):
+
+#     # Step 1 — Guardrail check
+#     guardrail_result = guardrail_service.check(user_message)
+
+#     if guardrail_result["blocked"]:
+
+#         return {
+#             "answer": "This request is restricted and cannot be answered.",
+#             "confidence": 1.0,
+#             "tier": "TIER_3",
+#             "severity": "HIGH",
+#             "kbReferences": [],
+#             "needsEscalation": True,
+#             "guardrail": guardrail_result
+#         }
+
+
+#     # Step 2 — KB search (RAG)
+#     kb_result = vector_service.search(user_message)
+
+#     return {
+#         "answer": kb_result["answer"],
+#         "confidence": 0.95,
+#         "tier": kb_result["tier"],
+#         "severity": kb_result["severity"],
+#         "kbReferences": [
+#             {
+#                 "id": kb_result["id"],
+#                 "title": kb_result["question"]
+#             }
+#         ],
+#         "needsEscalation": False,
+#         "guardrail": guardrail_result
+#     }
+
+
+#learn 5
+
+# from app.services.vector_service import VectorService
+# from app.services.guardrail_service import GuardrailService
+# from app.services.ticket_service import TicketService
+
+
+# vector_service = VectorService()
+# guardrail_service = GuardrailService()
+# ticket_service = TicketService()
+
+from app.services.service import (
+    ticket_service,
+    vector_service,
+    guardrail_service,
+    metrics_service
+)
 
 
 def handle_chat(session_id: str, user_message: str):
 
-    # Step 1 — Guardrail check
+    # 1️⃣ Record every conversation
+    metrics_service.record_chat()
+
+    # 2️⃣ Guardrail check
     guardrail_result = guardrail_service.check(user_message)
 
     if guardrail_result["blocked"]:
 
+        # Record metrics
+        metrics_service.record_guardrail()
+        metrics_service.record_escalation()
+        metrics_service.record_ticket("HIGH")
+
+        # Create ticket
+        ticket = ticket_service.create_ticket(
+            session_id=session_id,
+            issue=user_message,
+            severity="HIGH",
+            tier="TIER_3"
+        )
+
         return {
-            "answer": "This request is restricted and cannot be answered.",
+            "answer": "This request is restricted and has been escalated.",
             "confidence": 1.0,
             "tier": "TIER_3",
             "severity": "HIGH",
             "kbReferences": [],
             "needsEscalation": True,
+            "ticketId": ticket["ticketId"],
             "guardrail": guardrail_result
         }
 
-
-    # Step 2 — KB search (RAG)
+    # 3️⃣ Vector Search (RAG)
     kb_result = vector_service.search(user_message)
 
+    # 4️⃣ Escalate if severity HIGH
+    if kb_result["severity"] == "HIGH":
+
+        metrics_service.record_escalation()
+        metrics_service.record_ticket(kb_result["severity"])
+
+        ticket = ticket_service.create_ticket(
+            session_id=session_id,
+            issue=user_message,
+            severity=kb_result["severity"],
+            tier=kb_result["tier"]
+        )
+
+        return {
+            "answer": kb_result["answer"],
+            "confidence": 0.95,
+            "tier": kb_result["tier"],
+            "severity": kb_result["severity"],
+            "kbReferences": [
+                {
+                    "id": kb_result["id"],
+                    "title": kb_result["question"]
+                }
+            ],
+            "needsEscalation": True,
+            "ticketId": ticket["ticketId"],
+            "guardrail": guardrail_result
+        }
+
+    # 5️⃣ Normal response (no escalation)
     return {
         "answer": kb_result["answer"],
         "confidence": 0.95,
@@ -155,5 +257,6 @@ def handle_chat(session_id: str, user_message: str):
             }
         ],
         "needsEscalation": False,
+        "ticketId": None,
         "guardrail": guardrail_result
     }

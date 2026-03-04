@@ -86,5 +86,6 @@ async def chat_endpoint(req: ChatRequest):
         severity=result["severity"],
         kbReferences=result["kbReferences"],
         needsEscalation=result["needsEscalation"],
+        ticketId=result["ticketId"],
         guardrail=result["guardrail"]
     )
