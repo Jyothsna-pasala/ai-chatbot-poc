@@ -1,16 +1,23 @@
 [
-    {
-      "id": "kb_vm_crash",
-      "question": "vm crashed",
-      "answer": "Restart the VM from lab dashboard. If issue persists, contact support.",
-      "tier": "TIER_2",
-      "severity": "HIGH"
-    },
-    {
-      "id": "kb_login_issue",
-      "question": "login issue",
-      "answer": "Clear browser cache and try again.",
-      "tier": "TIER_1",
-      "severity": "LOW"
-    }
-   ]
+  {
+    "id": "kb_vm_crash",
+    "question": "vm crashed",
+    "answer": "Restart the VM from lab dashboard.",
+    "severity": "HIGH",
+    "tier": "TIER_2"
+  },
+  {
+    "id": "kb_login_redirect",
+    "question": "login redirect issue",
+    "answer": "Clear browser cookies and retry login.",
+    "severity": "LOW",
+    "tier": "TIER_1"
+  },
+  {
+    "id": "kb_container_init",
+    "question": "container init failed",
+    "answer": "Verify container image and restart container.",
+    "severity": "MEDIUM",
+    "tier": "TIER_2"
+  }
+]

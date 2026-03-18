@@ -170,30 +170,334 @@
 # guardrail_service = GuardrailService()
 # ticket_service = TicketService()
 
+#learn 6
+# from app.services.service import (
+#     ticket_service,
+#     vector_service,
+#     guardrail_service,
+#     metrics_service,
+#     memory_service
+# )
+
+
+# def handle_chat(session_id: str, user_message: str):
+
+#     # 1️⃣ Record every conversation
+#     metrics_service.record_chat()
+
+#     # 2️⃣ Guardrail check
+#     guardrail_result = guardrail_service.check(user_message)
+
+#     if guardrail_result["blocked"]:
+
+#         # Record metrics
+#         metrics_service.record_guardrail()
+#         metrics_service.record_escalation()
+#         metrics_service.record_ticket("HIGH")
+
+#         # Create ticket
+#         ticket = ticket_service.create_ticket(
+#             session_id=session_id,
+#             issue=user_message,
+#             severity="HIGH",
+#             tier="TIER_3"
+#         )
+
+#         return {
+#             "answer": "This request is restricted and has been escalated.",
+#             "confidence": 1.0,
+#             "tier": "TIER_3",
+#             "severity": "HIGH",
+#             "kbReferences": [],
+#             "needsEscalation": True,
+#             "ticketId": ticket["ticketId"],
+#             "guardrail": guardrail_result
+#         }
+
+#     # 3️⃣ Vector Search (RAG)
+#     kb_result = vector_service.search(user_message)
+
+#     # 4️⃣ Escalate if severity HIGH
+#     if kb_result["severity"] == "HIGH":
+
+#         metrics_service.record_escalation()
+#         metrics_service.record_ticket(kb_result["severity"])
+
+#         ticket = ticket_service.create_ticket(
+#             session_id=session_id,
+#             issue=user_message,
+#             severity=kb_result["severity"],
+#             tier=kb_result["tier"]
+#         )
+
+#         return {
+#             "answer": kb_result["answer"],
+#             "confidence": 0.95,
+#             "tier": kb_result["tier"],
+#             "severity": kb_result["severity"],
+#             "kbReferences": [
+#                 {
+#                     "id": kb_result["id"],
+#                     "title": kb_result["question"]
+#                 }
+#             ],
+#             "needsEscalation": True,
+#             "ticketId": ticket["ticketId"],
+#             "guardrail": guardrail_result
+#         }
+
+#     # 5️⃣ Normal response (no escalation)
+#     return {
+#         "answer": kb_result["answer"],
+#         "confidence": 0.95,
+#         "tier": kb_result["tier"],
+#         "severity": kb_result["severity"],
+#         "kbReferences": [
+#             {
+#                 "id": kb_result["id"],
+#                 "title": kb_result["question"]
+#             }
+#         ],
+#         "needsEscalation": False,
+#         "ticketId": None,
+#         "guardrail": guardrail_result
+#     }
+
+#learn 7
+# from app.services.service import (
+#     ticket_service,
+#     vector_service,
+#     guardrail_service,
+#     metrics_service,
+#     memory_service
+# )
+
+
+# def handle_chat(session_id: str, user_message: str):
+
+#     # 1️⃣ Record conversation metric
+#     metrics_service.record_chat()
+
+#     # 2️⃣ Store message in session memory
+#     memory_service.add_message(session_id, user_message)
+
+#     # 3️⃣ Retrieve conversation history
+#     history = memory_service.get_history(session_id)
+
+#     # 4️⃣ Combine history into a single query
+#     combined_query = " ".join(history)
+
+#     # 5️⃣ Run guardrail check
+#     guardrail_result = guardrail_service.check(user_message)
+
+#     # 🚨 If request is blocked
+#     if guardrail_result["blocked"]:
+
+#         metrics_service.record_guardrail()
+#         metrics_service.record_escalation()
+#         metrics_service.record_ticket("HIGH")
+
+#         ticket = ticket_service.create_ticket(
+#             session_id=session_id,
+#             issue=user_message,
+#             severity="HIGH",
+#             tier="TIER_3"
+#         )
+
+#         return {
+#             "answer": "This request is restricted and has been escalated.",
+#             "confidence": 1.0,
+#             "tier": "TIER_3",
+#             "severity": "HIGH",
+#             "kbReferences": [],
+#             "needsEscalation": True,
+#             "ticketId": ticket["ticketId"],
+#             "guardrail": guardrail_result
+#         }
+
+#     # 6️⃣ Run RAG search using conversation context
+#     kb_result = vector_service.search(combined_query)
+
+#     # 7️⃣ Escalation for high severity issues
+#     if kb_result["severity"] == "HIGH":
+
+#         metrics_service.record_escalation()
+#         metrics_service.record_ticket(kb_result["severity"])
+
+#         ticket = ticket_service.create_ticket(
+#             session_id=session_id,
+#             issue=user_message,
+#             severity=kb_result["severity"],
+#             tier=kb_result["tier"]
+#         )
+
+#         return {
+#             "answer": kb_result["answer"],
+#             "confidence": kb_result["confidence"],
+#             "tier": kb_result["tier"],
+#             "severity": kb_result["severity"],
+#             "kbReferences": [
+#                 {
+#                     "id": kb_result["id"],
+#                     "title": kb_result["question"]
+#                 }
+#             ],
+#             "needsEscalation": True,
+#             "ticketId": ticket["ticketId"],
+#             "guardrail": guardrail_result
+#         }
+
+#     # 8️⃣ Normal response (no escalation)
+#     return {
+#         "answer": kb_result["answer"],
+#         "confidence": kb_result["confidence"],
+#         "tier": kb_result["tier"],
+#         "severity": kb_result["severity"],
+#         "kbReferences": [
+#             {
+#                 "id": kb_result["id"],
+#                 "title": kb_result["question"]
+#             }
+#         ],
+#         "needsEscalation": False,
+#         "ticketId": None,
+#         "guardrail": guardrail_result
+#     }
+
+#learn 8
+# from app.services.service import (
+#     ticket_service,
+#     vector_service,
+#     guardrail_service,
+#     metrics_service,
+# )
+
+
+# # Conversation memory
+# session_memory = {}
+
+
+# def handle_chat(session_id: str, user_message: str):
+
+#     # Record conversation metric
+#     metrics_service.record_chat()
+
+#     # Get previous conversation history
+#     history = session_memory.get(session_id, [])
+
+#     # Combine history with new message
+#     combined_query = " ".join(history + [user_message])
+
+#     # Save message in memory
+#     history.append(user_message)
+#     session_memory[session_id] = history[-5:]
+
+#     # Guardrail check
+#     guardrail_result = guardrail_service.check(user_message)
+
+#     if guardrail_result["blocked"]:
+
+#         metrics_service.record_guardrail()
+#         metrics_service.record_escalation()
+#         metrics_service.record_ticket("HIGH")
+
+#         ticket = ticket_service.create_ticket(
+#             session_id=session_id,
+#             issue=user_message,
+#             severity="HIGH",
+#             tier="TIER_3"
+#         )
+
+#         return {
+#             "answer": "This request is restricted and has been escalated.",
+#             "confidence": 1.0,
+#             "tier": "TIER_3",
+#             "severity": "HIGH",
+#             "kbReferences": [],
+#             "needsEscalation": True,
+#             "ticketId": ticket["ticketId"],
+#             "guardrail": guardrail_result
+#         }
+
+#     # RAG search (Top-K retrieval)
+#     kb_results = vector_service.search(combined_query)
+
+#     # Best result
+#     kb_result = kb_results[0]
+
+#     # Escalation logic
+#     needs_escalation = kb_result["severity"] == "HIGH"
+
+#     ticket_id = None
+
+#     if needs_escalation:
+
+#         metrics_service.record_escalation()
+#         metrics_service.record_ticket(kb_result["severity"])
+
+#         ticket = ticket_service.create_ticket(
+#             session_id=session_id,
+#             issue=user_message,
+#             severity=kb_result["severity"],
+#             tier=kb_result["tier"]
+#         )
+
+#         ticket_id = ticket["ticketId"]
+
+#     return {
+#         "answer": kb_result["answer"],
+#         "confidence": kb_result["confidence"],
+#         "tier": kb_result["tier"],
+#         "severity": kb_result["severity"],
+#         "kbReferences": [
+#             {
+#                 "id": item["id"],
+#                 "title": item["question"]
+#             } for item in kb_results
+#         ],
+#         "needsEscalation": needs_escalation,
+#         "ticketId": ticket_id,
+#         "guardrail": guardrail_result
+#     }
+
+#learn 9
+
 from app.services.service import (
     ticket_service,
     vector_service,
     guardrail_service,
-    metrics_service
+    metrics_service,
+    classification_service
 )
+
+# In-memory session storage
+session_memory = {}
 
 
 def handle_chat(session_id: str, user_message: str):
 
-    # 1️⃣ Record every conversation
+    # 1️⃣ Record conversation
     metrics_service.record_chat()
 
-    # 2️⃣ Guardrail check
+    # 2️⃣ Get session history
+    history = session_memory.get(session_id, [])
+
+    # 3️⃣ Combine history with current message
+    combined_query = " ".join(history + [user_message])
+
+    # 4️⃣ Store last 5 messages
+    history.append(user_message)
+    session_memory[session_id] = history[-5:]
+
+    # 5️⃣ Guardrail check
     guardrail_result = guardrail_service.check(user_message)
 
     if guardrail_result["blocked"]:
 
-        # Record metrics
         metrics_service.record_guardrail()
         metrics_service.record_escalation()
         metrics_service.record_ticket("HIGH")
 
-        # Create ticket
         ticket = ticket_service.create_ticket(
             session_id=session_id,
             issue=user_message,
@@ -212,51 +516,49 @@ def handle_chat(session_id: str, user_message: str):
             "guardrail": guardrail_result
         }
 
-    # 3️⃣ Vector Search (RAG)
-    kb_result = vector_service.search(user_message)
+    # 6️⃣ Deterministic classification (Day 14)
+    classification = classification_service.classify(user_message)
+    tier = classification["tier"]
+    severity = classification["severity"]
 
-    # 4️⃣ Escalate if severity HIGH
-    if kb_result["severity"] == "HIGH":
+    # 7️⃣ RAG search (Top-K)
+    kb_results = vector_service.search(combined_query)
+
+    # 8️⃣ Pick best result
+    kb_result = kb_results[0]
+
+    # 9️⃣ Escalation logic
+    needs_escalation = severity in ["HIGH", "CRITICAL"]
+
+    ticket_id = None
+
+    if needs_escalation:
 
         metrics_service.record_escalation()
-        metrics_service.record_ticket(kb_result["severity"])
+        metrics_service.record_ticket(severity)
 
         ticket = ticket_service.create_ticket(
             session_id=session_id,
             issue=user_message,
-            severity=kb_result["severity"],
-            tier=kb_result["tier"]
+            severity=severity,
+            tier=tier
         )
 
-        return {
-            "answer": kb_result["answer"],
-            "confidence": 0.95,
-            "tier": kb_result["tier"],
-            "severity": kb_result["severity"],
-            "kbReferences": [
-                {
-                    "id": kb_result["id"],
-                    "title": kb_result["question"]
-                }
-            ],
-            "needsEscalation": True,
-            "ticketId": ticket["ticketId"],
-            "guardrail": guardrail_result
-        }
+        ticket_id = ticket["ticketId"]
 
-    # 5️⃣ Normal response (no escalation)
+    # 🔟 Final response
     return {
         "answer": kb_result["answer"],
-        "confidence": 0.95,
-        "tier": kb_result["tier"],
-        "severity": kb_result["severity"],
+        "confidence": kb_result["confidence"],
+        "tier": tier,
+        "severity": severity,
         "kbReferences": [
             {
-                "id": kb_result["id"],
-                "title": kb_result["question"]
-            }
+                "id": item["id"],
+                "title": item["question"]
+            } for item in kb_results
         ],
-        "needsEscalation": False,
-        "ticketId": None,
+        "needsEscalation": needs_escalation,
+        "ticketId": ticket_id,
         "guardrail": guardrail_result
     }
